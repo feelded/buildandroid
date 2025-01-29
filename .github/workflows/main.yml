@@ -29,9 +29,17 @@ jobs:
           unzip \
           curl \
           libssl-dev
-        sudo apt-get install \
-          aidl 
         echo "JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64" >> $GITHUB_ENV
+
+    - name: Install Android SDK tools
+      run: |
+        mkdir -p $HOME/android-sdk
+        cd $HOME/android-sdk
+        curl -o sdk-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip
+        unzip sdk-tools.zip
+        yes | ./cmdline-tools/bin/sdkmanager --sdk_root=$HOME/android-sdk "platform-tools" "platforms;android-29" "build-tools;29.0.3"
+        echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
+        echo "PATH=$HOME/android-sdk/platform-tools:$HOME/android-sdk/cmdline-tools/bin:$PATH" >> $GITHUB_ENV
 
     - name: Install Buildozer
       run: pip3 install cython buildozer kivy
