@@ -1,46 +1,24 @@
-name: Android Builder
-
-permissions:
-  contents: write
-
-
-on:
-  push:
-    branches:
-      - main
+name: Build Kivy Android
+on: [push, pull_request]
 
 jobs:
-  build:
-    runs-on: windows-latest
+  build-android:
+    name: Build for Android
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-        
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Build with Buildozer
+        uses: ArtemSBulgakov/buildozer-action@v1
+        id: buildozer
         with:
-          python-version: 3.12
+          workdir: /
+          buildozer_version: stable
 
-      - name: Install dependencies
-        run: |
-          python -m pip install kivy buildozer
-
-      - name: Set BUILDOZER_ALLOW_ROOT environment variable
-        run: echo "BUILDOZER_ALLOW_ROOT=1" >> $GITHUB_ENV
-
-      - name: Build Wheels
-        run: |
-          buildozer android debug
-          
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
         with:
-          name: Android.zip
-          path: bin/*
-
-      - name: Push to Releases
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: bin/*
-          tag: Android-v1.0.${{ github.run_number }}
-          token: ${{ github.TOKEN }}
+          name: package
+          path: ${{ steps.buildozer.outputs.filename }}
