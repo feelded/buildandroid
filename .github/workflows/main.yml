@@ -30,7 +30,7 @@ jobs:
         echo "JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64" >> $GITHUB_ENV
 
     - name: Install Buildozer
-      run: pip3 install buildozer kivy
+      run: pip3 install cython buildozer kivy
 
     - name: Cache Buildozer dependencies
       uses: actions/cache@v3
