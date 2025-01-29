@@ -26,6 +26,8 @@ jobs:
           python -m pip install kivy buildozer
 
       - name: Build Wheels
+        env:
+          BUILDOZER_ALLOW_ROOT: "1"
         run: |
           buildozer android debug
           
