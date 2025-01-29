@@ -1,62 +1,26 @@
-name: Build Kivy APK with Buildozer
-
+name: Build
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [main]
 
 jobs:
-  build:
-    runs-on: ubuntu-22.04
+
+  build-android:
+    name: Build for Android
+    runs-on: ubuntu-latest
+
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v2
 
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          python3-pip \
-          python3-dev \
-          build-essential \
-          libstdc++6 \
-          openjdk-8-jdk \
-          zlib1g-dev \
-          libncurses5-dev \
-          libncursesw5-dev \
-          libtinfo5 \
-          unzip \
-          curl \
-          libssl-dev
-        echo "JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64" >> $GITHUB_ENV
+      - name: Build with Buildozer
+        uses: ArtemSBulgakov/buildozer-action@v1
+        id: buildozer
+        with:
+          workdir: .
+          buildozer_version: stable
 
-    - name: Install Android SDK tools
-      run: |
-        mkdir -p $HOME/android-sdk
-        cd $HOME/android-sdk
-        curl -o sdk-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip
-        unzip sdk-tools.zip
-        yes | ./cmdline-tools/bin/sdkmanager --sdk_root=$HOME/android-sdk "platform-tools" "platforms;android-29" "build-tools;29.0.3"
-        echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
-        echo "PATH=$HOME/android-sdk/platform-tools:$HOME/android-sdk/cmdline-tools/bin:$PATH" >> $GITHUB_ENV
-
-    - name: Install Buildozer
-      run: pip3 install cython buildozer kivy
-
-    - name: Cache Buildozer dependencies
-      uses: actions/cache@v3
-      with:
-        path: ~/.buildozer
-        key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}
-        restore-keys: |
-          ${{ runner.os }}-buildozer-
-
-    - name: Build APK
-      run: buildozer android debug
-
-    - name: Upload APK artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: app-debug
-        path: bin/*.apk
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: package
+          path: ${{ steps.buildozer.outputs.filename }}
